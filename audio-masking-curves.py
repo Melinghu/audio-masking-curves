@@ -43,10 +43,11 @@ n = [i for i in range(2048)]
 nfft = len(n)
 
 # Definindo as frequencias
-freqmax = fs/2
+freqmax = fs
 freqmin = 0
 
 freqhop = (freqmax - freqmin)/nfft
+
 
 # O sinal de teste, x, eh um combinacao de cosenoides de diferentes periodos
 x = np.multiply(A0, np.cos(np.multiply(2*(np.pi)*f0/fs, n))) + np.multiply(A1, np.cos(np.multiply(2*(np.pi)*f1/fs, n)))     + np.multiply(A2, np.cos(np.multiply(2*(np.pi)*f2/fs, n))) + np.multiply(A3, np.cos(np.multiply(2*(np.pi)*f3/fs, n)))     + np.multiply(A4, np.cos(np.multiply(2*(np.pi)*f4/fs, n))) + np.multiply(A5, np.cos(np.multiply(2*(np.pi)*f5/fs, n)))
@@ -63,9 +64,14 @@ plt.show()
 
 # Realizamos a FFT de x e avaliamos seus valores absolutos
 
-freq = np.dot(n, freqhop)
+freq = np.dot(freqhop, n)
 
 x_fft = np.fft.fft(x)
+
+# Truncando os sinais, para considerar somente a parte positiva do espectro,
+# ou seja, somente as "frequencias positivas" de cada cossenoide
+freq = freq[:-1024]
+x_fft = x_fft[:-1024]
 
 plt.figure(figsize=(20,10))
 plt.plot(freq, abs(x_fft))
@@ -91,6 +97,8 @@ plt.show()
 # Encontramos os picos da FFT
 peaks, _ = signal.find_peaks(x_fft_2)
 
+print(freq[peaks])
+
 
 # Definimos a funcao de transformacao de dominios da frequencia (FFT)
 # para dominio Bark  e vice-versa (utilizamos a aproximacao de
@@ -104,7 +112,7 @@ def freq2bark(freq):
 
 def bark2freq(bark):
 
-    freq = 650 * np.sinh(bark / 7)
+    freq = 600 * np.sinh(bark / 6)
     return freq
 
 
@@ -125,6 +133,8 @@ def amp2spl(x_fft_2):
 # Realizamos a transformacao de dominios
 
 bark = freq2bark(freq)
+
+print(bark[peaks])
 
 plt.figure(figsize=(20,10))
 plt.plot(bark, x_fft_2)
